@@ -31,6 +31,60 @@ Frontend: HTML5, CSS3, Vanilla JavaScript[cite: 5]
 
 Tooling & Execution: tsx (TypeScript Execute with watch mode), TypeScript compiler (tsc)[cite: 5]
 
+## API Endpoints
+- **GET /list** - Get all the tasks (Статус: `200 OK`)
+- **POST /post** - Add a new task (Статус: `201 Created`)
+- **PUT /edit** - Edited an existing task (Статус: `200 OK`)
+- **DELETE /delete** - Deleted an existing task (Статус: `200 OK`)
+
+### Request Examples
+
+#### 1.Add a new task (`POST /post`)
+**Body (JSON):**
+```json
+{
+  "title": "Your new task",
+  "completed": false
+}
+
+### 1.Example:
+{
+    "id": 1792306285573,
+    "title": "Drink water",
+    "completed": false
+  }
+
+#### 2.Edit a task (`PUT /edit`)
+**Body (JSON):**
+```json
+{
+  "id": Your task's id,
+  "title": "Your new task (updated)",
+  "completed": false
+}
+
+### 2.Example:
+{
+    "id": 1792306285573,
+    "title": "Drink juice",
+    "completed": false
+  }
+
+#### 3.Delete a task (`DELETE /delete`)
+**Body (JSON):**
+```json
+{
+  "id": Your task's id,
+  "title": "Your task",
+  "completed": false
+}
+### 3.Example:
+{
+    "id": 1792306285573,
+    "title": "Drink juice",
+    "completed": false
+  }
+
 ⚙️ Getting Started & Installation
 Prerequisites
 Make sure you have Node.js installed on your system.
@@ -48,7 +102,7 @@ The backend runs using tsx in watch mode to handle API endpoints (such as fetchi
 
 Bash
 npx tsx watch backend/todo.ts
-The server will start and listen on port 3004 by default[cite: 5].
+The server will start and listen on port 3004 by default.
 
 2. Frontend Development
 You can open the files inside the frontend/ directory (such as todo.html or index.html) using a Live Server extension in VS Code to interact with the UI and communicate with your backend server[cite: 5].
