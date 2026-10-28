@@ -36,7 +36,7 @@ const server = http.createServer(async (req, res) => {
     return res.end();
   }
 
-  if (req.url === "/list" && req.method === "GET") {
+  if (req.url === "/tasks" && req.method === "GET") {
     return res.end(JSON.stringify(await read()));
   }
 

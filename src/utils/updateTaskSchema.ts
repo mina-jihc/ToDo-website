@@ -1,0 +1,6 @@
+import { z } from 'zod';
+
+export const updateTaskSchema = z.object ({
+    title: z.string().optional(),
+    completed: z.boolean().optional()
+})
