@@ -1,119 +1,121 @@
-# Full-Stack Todo & JavaScript Task Application
+Todo API — Express + TypeScript
+A RESTful Todo API built with Express and TypeScript, featuring validation with zod, JSON file persistence, filtering/sorting/pagination, and security middleware.
 
-A full-stack application featuring a custom Node.js/TypeScript backend server with JSON file persistence, a vanilla frontend interface, and auxiliary JavaScript/TypeScript task scripts.
+ Tech Stack
+Backend: Node.js, Express, TypeScript
+Validation: zod
+Security: helmet, CORS, express-rate-limit
+Logging: morgan
+Runtime: tsx
+Storage: JSON file (data.json)
+📁 Project Structure
+backend/
+├── data.json               # Task storage
+├── todo_express.ts               # ToDo written with Express and TypeScript
+├── todo.ts               # ToDo written with Node.js and TypeScript
 
----
+frontend/
+├── frontend
 
-## 📁 Project Structure
+src/
+├── controllers/tasks.ts    # Request handling logic
+├── middleware/errorHandler.ts     # Centralized error responses
+├── routes/tasks.ts         # API route definitions
+├── services/tasks.ts       # Data operations (read/write JSON)
+├── utils/
+│   ├── AppError.ts         # Custom error class with statusCode
+│   ├── asyncHandler.ts     # Wraps async handlers, forwards errors
+│   ├── taskSchema.ts       # zod schema for creating tasks
+│   ├── updateTaskSchema.ts # zod schema for updating tasks
+│   └── querySchema.ts      # zod schema for query params
+├── index.ts                # Server entry point
+├── types.ts                # TypeScript types
+Копировать
+🔌 API Endpoints
+GET /tasks
+Get all tasks. Supports query parameters:
 
-```text
-JavaScript tasks/
-├── backend/
-│   ├── data.json       # JSON-based data storage for tasks
-│   └── todo.ts         # Node.js HTTP server handling API requests
-├── frontend/
-│   ├── index.html      # Main landing page(JavaScript Tasks)
-│   ├── script.js       # Frontend interaction script
-│   ├── style.css       # Global styles[cite: 5]
-│   ├── todo.css        # Todo-specific styles[cite: 5]
-│   ├── todo.html       # Todo UI interface[cite: 5]
-│   └── todo.js         # Todo frontend logic[cite: 5]
-├── co-body.d.ts        # TypeScript declaration file[cite: 5]
-├── package.json        # Project dependencies and npm scripts[cite: 5]
-├── script.ts           # Additional TypeScript tasks[cite: 5]
-└── tsconfig.json       # TypeScript configuration[cite: 5]
+Param	Values	Description
+status	completed | active	Filter by completion status
+sort	title | id | completed	Sort results
+page	number	Page number (starts at 1)
+limit	number	Items per page (default 10)
+Example:
 
+GET /tasks?status=active&sort=title&page=1&limit=5
+Response: 200 OK
 
-🚀 Tech Stack
-Backend: TypeScript, Node.js (http module), custom request parsing, JSON file storage[cite: 5]
+[
+  { "id": 1792306285573, "title": "Drink water", "completed": false }
+]
 
-Frontend: HTML5, CSS3, Vanilla JavaScript[cite: 5]
+POST /tasks
+Create a new task.
 
-Tooling & Execution: tsx (TypeScript Execute with watch mode), TypeScript compiler (tsc)[cite: 5]
+Body (JSON):
 
-## API Endpoints
-- **GET /list** - Get all the tasks (Статус: `200 OK`)
-- **POST /post** - Add a new task (Статус: `201 Created`)
-- **PUT /edit** - Edited an existing task (Статус: `200 OK`)
-- **DELETE /delete** - Deleted an existing task (Статус: `200 OK`)
-
-### Request Examples
-
-#### 1.Add a new task (`POST /post`)
-**Body (JSON):**
-```json
 {
+  "title": "Your new task"
+}
+Response: 201 Created
+
+{
+  "id": 1792306285573,
   "title": "Your new task",
   "completed": false
 }
+PUT /tasks/:id
+Update an existing task. Both fields are optional — send only what you want to change.
 
-### 1.Example:
-{
-    "id": 1792306285573,
-    "title": "Drink water",
-    "completed": false
-  }
+Body (JSON):
 
-#### 2.Edit a task (`PUT /edit`)
-**Body (JSON):**
-```json
 {
-  "id": Your task's id,
-  "title": "Your new task (updated)",
-  "completed": false
+  "title": "Updated title",
+  "completed": true
+}
+Response: 200 OK
+
+{
+  "id": 1792306285573,
+  "title": "Updated title",
+  "completed": true
+}
+DELETE /tasks/:id
+Delete a task by its id.
+
+Response: 200 OK
+
+GET /health
+Health check — verifies the server is running.
+
+Response: 200 OK
+
+{
+  "uptime": 123.45,
+  "message": "Ok",
+  "date": "2026-10-29T11:00:00.000Z"
 }
 
-### 2.Example:
-{
-    "id": 1792306285573,
-    "title": "Drink juice",
-    "completed": false
-  }
-
-#### 3.Delete a task (`DELETE /delete`)
-**Body (JSON):**
-```json
-{
-  "id": Your task's id,
-  "title": "Your task",
-  "completed": false
-}
-### 3.Example:
-{
-    "id": 1792306285573,
-    "title": "Drink juice",
-    "completed": false
-  }
-
-⚙️ Getting Started & Installation
+🛡️ Security
+helmet — sets secure HTTP headers
+CORS — controls cross-origin requests
+express-rate-limit — limits requests per IP (100 requests / 15 min)
+Graceful shutdown — closes the server safely on SIGTERM
+⚙️ Getting Started
 Prerequisites
-Make sure you have Node.js installed on your system.
-
-Setup Instructions
-Clone the repository or open your local workspace folder (JavaScript tasks)[cite: 5].
-
-Install the required project dependencies:
-
-Bash
+Node.js installed
+Setup
+# 1. Install dependencies
 npm install
-📦 Running the Application
-1. Run the Backend Server
-The backend runs using tsx in watch mode to handle API endpoints (such as fetching, creating, updating via PUT /edit, and deleting tasks)[cite: 5]:
 
-Bash
-npx tsx watch backend/todo.ts
-The server will start and listen on port 3004 by default.
+# 2. Create .env file
+# PORT=3000
 
-2. Frontend Development
-You can open the files inside the frontend/ directory (such as todo.html or index.html) using a Live Server extension in VS Code to interact with the UI and communicate with your backend server[cite: 5].
+# 3. Run the server
+npm run dev
 
-3. Type Checking
-To run static type checking across your TypeScript files without emitting outputs:
+The server starts on http://localhost:3000 by default.
 
-Bash
-npx tsc --noEmit
-
-Screenshots
-<img width="1471" height="927" alt="image" src="https://github.com/user-attachments/assets/bb092b48-1257-43c6-b989-006e4eb46f2c" />
-<img width="830" height="422" alt="image" src="https://github.com/user-attachments/assets/3c2ed9d1-b14e-4492-89ab-0c6cbac641ec" />
-<img width="1079" height="930" alt="image" src="https://github.com/user-attachments/assets/0c8cfba5-d399-4f82-85ef-47c60363c423" />
+🔑 Environment Variables
+Variable	Default	  Description
+PORT	    3000	    Server port
