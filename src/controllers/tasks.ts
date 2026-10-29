@@ -41,7 +41,7 @@ export const getTasks = async (
     const limit = data.limit ?? 10; 
     const page = data.page ?? 1;
 
-    let start = (page - 1) * limit;
+    let start = (page - 1) * limit;  //page=1 limit=2  start=0,end   slice(0,2)
     let end = start + limit;
     result2 = result2.slice(start, end);
   }
