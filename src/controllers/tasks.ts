@@ -1,27 +1,23 @@
 import type { NextFunction, Request, Response } from "express";
-import { readDB, writeDB } from "../services/tasks.js";
+import { readDB, createTask, updateTask, dbeleteTask } from "../services/tasks.js";
 import type { ToDo } from "../types.js";
 import { AppError } from "../utils/AppError.js";
 import { createTaskSchema } from "../utils/taskSchema.js";
 import { updateTaskSchema } from "../utils/updateTaskSchema.js";
 import { querySchema } from "../utils/querySchema.js";
+import { pool } from '../db.js';
 
-export const getTasks = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
-  // GET
-  const result = querySchema.safeParse(req.query);
-  const tasks = await readDB();
-
+export const getTasks = async ( req: Request, res: Response, next: NextFunction ) => {
+   try {
+    const result = querySchema.safeParse(req.query);
+   
   if (!result.success) {
     return next(
       new AppError(result.error.issues[0]?.message ?? "Invalid data", 400),
     );
   }
   const { data } = result;
-
+  const tasks = await readDB();
   let result2 = tasks;
   if (data.status === "completed") {
     result2 = result2.filter((task) => task.completed === true);
@@ -41,21 +37,22 @@ export const getTasks = async (
     const limit = data.limit ?? 10; 
     const page = data.page ?? 1;
 
-    let start = (page - 1) * limit;  //page=1 limit=2  start=0,end   slice(0,2)
+    let start = (page - 1) * limit;  
     let end = start + limit;
     result2 = result2.slice(start, end);
   }
   
   res.status(200).json(result2);
-  return;
+  } catch (error) {
+  next(error)
+}
 };
 
-export const postTask = async (
+export const postTask = async (          // POST
   req: Request,
   res: Response,
   next: NextFunction,
 ) => {
-  // POST
   const result = createTaskSchema.safeParse(req.body);
 
   if (!result.success) {
@@ -63,62 +60,51 @@ export const postTask = async (
       new AppError(result.error.issues[0]?.message ?? "Invalid data", 400),
     );
   }
-  const { title } = result.data; // Shorter-destructurization
-  // const title = result.data.title;
+  const { title, user_id } = result.data; 
 
-  const body = req.body;
-  const tasks = await readDB();
-  const newTodo: ToDo = {
-    id: Date.now(),
-    title,
-    completed: false,
-  };
-
-  tasks.push(newTodo);
-  await writeDB(tasks);
-  res.status(201).json(newTodo);
-  return;
-};
-
-export const editTask = async (      // EDIT
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
-  const result = updateTaskSchema.safeParse(req.body);
-
-  if (!result.success) {
-    return next(
-      new AppError(result.error.issues[0]?.message ?? "Invalid data", 400),
-    );
-  }
-  const id = Number(req.params.id); 
-  const tasks = await readDB();
-  const index = tasks.findIndex((task) => task.id === id);
-  if (index === -1) {
-    return next(new AppError("Task not found", 404));
-  }
-
-  const { data } = result;
-  tasks[index] = { ...tasks[index], ...data } as ToDo;
-  await writeDB(tasks);
-  res.status(200).json(tasks[index]);
-};
-
-export const deleteTask = async (req: Request, res: Response) => {
-  // DELETE
-  const body = req.body;
-  const id = Number(req.params.id);
-  const tasks = await readDB();
-
-  const filtered = tasks.filter((task) => task.id !== id);
-
-  if (tasks.length > filtered.length) {
-    await writeDB(filtered);
-    res.status(200).json(filtered);
-    // res.status(200).json({message: "Task succesfully deleted"});
-    return;
-  } else {
-    throw new AppError("Task not found", 404);
+  try {
+    const db_result = await createTask(title, user_id)
+    const newTodo = db_result;
+    res.status(201).json(newTodo);
+  } catch {
+    return next(new AppError("Invalid request", 400))
   }
 };
+
+export const editTask = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const result = updateTaskSchema.safeParse(req.body);
+    if (!result.success) {
+      return next(new AppError(result.error.issues[0]?.message ?? "Invalid data", 400));
+    }
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id) || id <= 0) {
+      return next(new AppError("Invalid id", 400));
+    }
+    const update = await updateTask(id, result.data);
+    if (!update) {
+      return next(new AppError("Task not found", 404));
+    }
+    res.status(200).json(update);
+  } catch (err) {
+    next(err);
+  }
+};
+
+
+export const deleteTask = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id) || id <= 0) {
+      return next(new AppError("Invalid id", 400));
+    }
+    const result = await dbeleteTask(id);
+    if (!result) {
+      return next(new AppError("Task not found", 404));
+    }
+    res.status(200).json(result);
+  } catch (err) {
+    next(err);
+  }
+};
+
