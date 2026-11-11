@@ -5,9 +5,10 @@ import morgan from "morgan";
 import helmet from "helmet";
 import cors from "cors";
 import rateLimit from "express-rate-limit";
-import { pool } from "./db.js";
+import { prisma } from "./prisma.js";
 import "dotenv/config";
 import { AppError } from "./utils/AppError.js";
+import tagsRouter from "./routes/tags.js";
 
 const app = express();
 
@@ -20,10 +21,11 @@ const limiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 100 });
 app.use(limiter);
 
 app.use("/tasks", router);
+app.use("/tags", tagsRouter);
 
 app.use("/health", async (req, res) => {
   try {
-    await pool.query("select 1");
+    await prisma.$connect();  // $queryRaw`select 1`  OR
     res.status(200).json({ 
       status: "ok",
       uptime: process.uptime(),
@@ -45,7 +47,7 @@ const server = app.listen(port, () => console.log(`Server on ${port}`));
 const shutdown = async () => {
   console.log("Shutting down gracefully...");
   server.close(async () => {
-    await pool.end();
+    await prisma.$disconnect();
     process.exit(0);
   });
 };

@@ -1,0 +1,53 @@
+//use prisma 8
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+model App_users {
+  id    Int    @id @default(autoincrement())
+  name  String @db.VarChar(50)
+
+  tasks Tasks[]
+
+  @@map("app_users")
+}
+
+model Tasks {
+  id        Int     @id @default(autoincrement())
+  userId    Int     @map("user_id")
+  title     String  @db.VarChar(100)
+  completed Boolean @default(false)
+
+  appUser   App_users   @relation(fields: [userId], references: [id])
+  taskTags  Task_tags[]
+
+  @@map("tasks")    
+  @@index([userId])
+}
+
+model Tags {
+  id       Int    @id @default(autoincrement())
+  name     String @unique @db.VarChar(50)
+
+  taskTags Task_tags[]
+
+  @@map("tags")
+}
+
+model Task_tags {
+  task_id Int
+  tag_id  Int
+
+  task Tasks @relation(fields: [task_id], references: [id], onDelete: Cascade)
+  tag  Tags  @relation(fields: [tag_id], references: [id], onDelete: Cascade)
+
+  @@id([task_id, tag_id])
+  @@map("task_tags")
+}

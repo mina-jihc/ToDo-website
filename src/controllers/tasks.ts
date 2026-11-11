@@ -1,11 +1,9 @@
 import type { NextFunction, Request, Response } from "express";
-import { readDB, createTask, updateTask, dbeleteTask } from "../services/tasks.js";
-import type { ToDo } from "../types.js";
 import { AppError } from "../utils/AppError.js";
 import { createTaskSchema } from "../utils/taskSchema.js";
 import { updateTaskSchema } from "../utils/updateTaskSchema.js";
 import { querySchema } from "../utils/querySchema.js";
-import { pool } from '../db.js';
+import { taskService } from "../services/taskService.js";
 
 export const getTasks = async ( req: Request, res: Response, next: NextFunction ) => {
    try {
@@ -17,8 +15,7 @@ export const getTasks = async ( req: Request, res: Response, next: NextFunction 
     );
   }
   const { data } = result;
-  const tasks = await readDB();
-  let result2 = tasks;
+  let result2 = await taskService.getAll();
   if (data.status === "completed") {
     result2 = result2.filter((task) => task.completed === true);
   } else if (data.status === "active") {
@@ -63,11 +60,11 @@ export const postTask = async (          // POST
   const { title, user_id } = result.data; 
 
   try {
-    const db_result = await createTask(title, user_id)
+    const db_result = await taskService.create(user_id, title);
     const newTodo = db_result;
     res.status(201).json(newTodo);
-  } catch {
-    return next(new AppError("Invalid request", 400))
+  } catch (err) {
+     next(err)
   }
 };
 
@@ -81,10 +78,7 @@ export const editTask = async (req: Request, res: Response, next: NextFunction) 
     if (!Number.isInteger(id) || id <= 0) {
       return next(new AppError("Invalid id", 400));
     }
-    const update = await updateTask(id, result.data);
-    if (!update) {
-      return next(new AppError("Task not found", 404));
-    }
+    const update = await taskService.update(id, result.data);
     res.status(200).json(update);
   } catch (err) {
     next(err);
@@ -98,7 +92,7 @@ export const deleteTask = async (req: Request, res: Response, next: NextFunction
     if (!Number.isInteger(id) || id <= 0) {
       return next(new AppError("Invalid id", 400));
     }
-    const result = await dbeleteTask(id);
+    const result = await taskService.remove(id);
     if (!result) {
       return next(new AppError("Task not found", 404));
     }
