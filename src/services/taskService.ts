@@ -1,23 +1,29 @@
-import { compile, string } from 'zod';
 import { prisma } from '../prisma';
-import { handlePrismaError } from '../utils/prismaError';
-import { createTaskWithTag } from './tasks';
+import { AppError } from '../utils/AppError';
 
 export const taskService = {
-  async getAll(page = 1, perPage = 10) {
+  async getAll(userId: number, role: string, page = 1, perPage = 10) {
     return prisma.tasks.findMany({
+      where: role === "admin" ? {} : { userId },
       skip: (page - 1) * perPage,
       take: perPage,
       orderBy: { id: 'desc' },
-      include: { appUser: true },
+      include: { appUser: { select: { id: true, name: true, email: true, role: true },} },
     })
   },
 
-async getById(id: number) {
-    return prisma.tasks.findUnique({
-      where: { id },
-      include: { appUser: true, taskTags: { include: { tag: true } } },
+async getById(id: number, userId: number) {
+    const task = await prisma.tasks.findFirst({
+      where: { id, userId },
+      include: { appUser: { select: { id: true, name: true, email: true, role: true }}, taskTags: { include: { tag: true } } },
     })
+    console.log(' RESULT:', task);
+    if (!task) {
+      console.log(' 404 LAQTYRADY');
+    throw new AppError("Task not found", 404);
+  }
+
+  return task;
   },
 
 async create(userId: number, title: string) {
@@ -42,9 +48,11 @@ async createTag(name: string) {
 },
 
 async update(
-  id: number,
+  id: number, userId: number,
   data: { title?: string | undefined; completed?: boolean | undefined },
 ) {
+  const task = await prisma.tasks.findFirst({ where: { id, userId } });
+  if (!task) throw new AppError('Task not found', 404);
   return prisma.tasks.update({
     where: { id },
     data: {
@@ -55,7 +63,12 @@ async update(
 },
 
  async remove(id: number) {
-    return prisma.tasks.delete({ where: { id } })
+    const result = await prisma.tasks.deleteMany({ where: { id } });
+
+    if (result.count === 0) {
+      throw new AppError('Task not found', 404);
+    }
+    return result.count;
   },
 
   async count() {

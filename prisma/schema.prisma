@@ -9,12 +9,28 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model RefreshToken {
+  id        Int         @id @default(autoincrement())
+  token     String      @unique
+  userId    Int         @map("user_id")
+  expiresAt DateTime    @map("expires_at")
+
+  appUser   App_users   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@map("refresh_token")
+}
+
 
 model App_users {
   id    Int    @id @default(autoincrement())
-  name  String @db.VarChar(50)
+  name  String? @db.VarChar(50)
+  email String? @unique @db.VarChar(100)
+  password  String?  @db.VarChar(255)
+  role      String   @default("user") @db.VarChar(20) 
+
+
 
   tasks Tasks[]
+  refreshTokens RefreshToken[] 
 
   @@map("app_users")
 }

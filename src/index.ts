@@ -9,6 +9,10 @@ import { prisma } from "./prisma.js";
 import "dotenv/config";
 import { AppError } from "./utils/AppError.js";
 import tagsRouter from "./routes/tags.js";
+import authRouter  from "./routes/auth.routes.js";
+import { authErrorHandler } from "./utils/authErrorHandler.js";
+import { authMiddleware } from "./middleware/auth.middleware.js";
+import cookieParser from "cookie-parser";
 
 const app = express();
 
@@ -22,6 +26,13 @@ app.use(limiter);
 
 app.use("/tasks", router);
 app.use("/tags", tagsRouter);
+app.use("/auth", authRouter);
+app.use(authErrorHandler);
+router.get('/tasks', authMiddleware);
+app.use(cookieParser());
+app.set("trust proxy", 1);
+app.use(authErrorHandler);
+
 
 app.use("/health", async (req, res) => {
   try {
