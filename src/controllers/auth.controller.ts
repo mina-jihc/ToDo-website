@@ -35,7 +35,6 @@ export async function loginHandler(req: Request, res: Response, next: NextFuncti
   }
 }
 
-
 export async function refreshHandler(req: Request, res: Response, next: NextFunction) {
   try {
     const oldToken = req.cookies?.refreshToken;
@@ -49,7 +48,6 @@ export async function refreshHandler(req: Request, res: Response, next: NextFunc
     next(err);
   }
 }
-
 
 export async function logoutHandler(req: Request, res: Response, next: NextFunction) {
   try {

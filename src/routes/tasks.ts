@@ -1,6 +1,5 @@
 import express from 'express';
 import { deleteTask, editTask, getTasks, postTask, getTask } from '../controllers/tasks.js';
-import { taskService } from '../services/taskService.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { refreshHandler } from '../controllers/auth.controller.js';
 import { authMiddleware } from '../middleware/auth.middleware.js';

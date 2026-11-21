@@ -1,9 +1,9 @@
 import rateLimit from "express-rate-limit";
 
 export const authLimiter = rateLimit({
-  windowMs: 60 * 1000,        // 1 минут
-  limit: 5,                   // 5 сұраныс
-  standardHeaders: "draft-7", // RateLimit-* header-лер
-  legacyHeaders: false,       // X-RateLimit-* өшіру
+  windowMs: 60 * 1000,        
+  limit: 5,                   
+  standardHeaders: "draft-7", 
+  legacyHeaders: false,       
   message: { error: "Too many attempts, try again in a minute" },
 });

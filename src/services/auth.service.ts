@@ -18,7 +18,8 @@ export async function register(name: string, email: string, password: string) {
 } catch (err: unknown) {
   if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002') {
     console.log("ERROR CODE:", err.code);
-        console.log("ERROR META:", err.meta);
+    console.log("ERROR META:", err.meta);
+    throw new ConflictError("Email already exists");
   }
   throw err;
 }

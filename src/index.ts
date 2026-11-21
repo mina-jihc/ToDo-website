@@ -10,6 +10,7 @@ import "dotenv/config";
 import { AppError } from "./utils/AppError.js";
 import tagsRouter from "./routes/tags.js";
 import authRouter  from "./routes/auth.routes.js";
+import usersRouter from "./routes/users.js";
 import { authErrorHandler } from "./utils/authErrorHandler.js";
 import { authMiddleware } from "./middleware/auth.middleware.js";
 import cookieParser from "cookie-parser";
@@ -24,13 +25,13 @@ app.use(morgan("dev"));
 const limiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 100 });
 app.use(limiter);
 
+app.use(cookieParser());
+app.use("/auth", authRouter);
 app.use("/tasks", router);
 app.use("/tags", tagsRouter);
-app.use("/auth", authRouter);
-app.use(authErrorHandler);
+app.use("/users", usersRouter);
 router.get('/tasks', authMiddleware);
-app.use(cookieParser());
-app.set("trust proxy", 1);
+// app.set("trust proxy", 1);
 app.use(authErrorHandler);
 
 
